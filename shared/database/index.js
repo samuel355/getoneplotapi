@@ -2,6 +2,10 @@
 const { Pool } = require('pg');
 const logger = require('../utils/logger');
 
+function quoteIdent(identifier) {
+  return `"${String(identifier).replace(/"/g, '""')}"`;
+}
+
 class Database {
   constructor() {
     this.pool = null;
@@ -32,9 +36,22 @@ class Database {
       }
 
       this.pool = new Pool(poolConfig);
+      const preferredSchema = process.env.DATABASE_SCHEMA;
+
+      if (preferredSchema) {
+        this.pool.on('connect', (connectedClient) => {
+          const sql = `SET search_path TO ${quoteIdent(preferredSchema)}`;
+          connectedClient.query(sql).catch((err) => {
+            logger.error('Failed to set search_path for new DB connection:', err);
+          });
+        });
+      }
 
       // Test connection
       const client = await this.pool.connect();
+      if (preferredSchema) {
+        await client.query(`SET search_path TO ${quoteIdent(preferredSchema)}`);
+      }
       logger.info('Database connected successfully');
       client.release();
 
