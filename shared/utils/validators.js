@@ -73,7 +73,7 @@ const schemas = {
         { is: 'facebook', then: Joi.string().required() },
         { is: 'github', then: Joi.string().required() },
       ],
-      default: Joi.string().optional(),
+      otherwise: Joi.string().optional(),
     }),
   }),
 

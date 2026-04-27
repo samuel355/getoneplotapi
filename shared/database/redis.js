@@ -1,4 +1,4 @@
-const { createClient } = require('redis');
+const Redis = require('ioredis');
 const logger = require('../utils/logger');
 
 class RedisClient {
@@ -12,29 +12,33 @@ class RedisClient {
    */
   async connect() {
     try {
-      // Prefer a full connection URL if provided (e.g., Upstash rediss://)
+      // Priority 1: Check for direct connection string (e.g., Upstash rediss://)
       const redisUrl = process.env.REDIS_URL;
 
-      const config = redisUrl
-        ? { url: redisUrl }
-        : {
-            socket: {
-              host: process.env.REDIS_HOST || 'localhost',
-              port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-            },
-          };
+      let config;
 
-      // Add password if provided
-      if (!redisUrl && process.env.REDIS_PASSWORD) {
-        config.password = process.env.REDIS_PASSWORD;
+      if (redisUrl) {
+        // Direct connection using URL (supports rediss:// for Upstash)
+        config = redisUrl;
+      } else {
+        // Fallback to host/port configuration
+        config = {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+          password: process.env.REDIS_PASSWORD,
+          db: parseInt(process.env.REDIS_DB, 10) || 0,
+          retryStrategy: (times) => {
+            const delay = Math.min(times * 50, 2000);
+            return delay;
+          },
+          enableReadyCheck: false,
+          enableOfflineQueue: true,
+          maxRetriesPerRequest: null,
+          tls: process.env.REDIS_TLS === 'true' ? {} : undefined,
+        };
       }
 
-      // Add database selection if provided
-      if (!redisUrl && process.env.REDIS_DB) {
-        config.database = parseInt(process.env.REDIS_DB, 10);
-      }
-
-      this.client = createClient(config);
+      this.client = new Redis(config);
 
       // Error handling
       this.client.on('error', (err) => {
@@ -61,7 +65,9 @@ class RedisClient {
         this.isConnected = false;
       });
 
-      await this.client.connect();
+      // Wait for connection
+      await this.client.ping();
+      this.isConnected = true;
 
       return this.client;
     } catch (error) {
@@ -87,11 +93,10 @@ class RedisClient {
    */
   async set(key, value, ttl = null) {
     try {
-      const options = {};
       if (ttl) {
-        options.EX = ttl;
+        return await this.client.set(key, value, 'EX', ttl);
       }
-      return await this.client.set(key, value, options);
+      return await this.client.set(key, value);
     } catch (error) {
       logger.error(`Redis SET error for key ${key}:`, error);
       throw error;
@@ -103,7 +108,7 @@ class RedisClient {
    */
   async setex(key, seconds, value) {
     try {
-      return await this.client.setEx(key, seconds, value);
+      return await this.client.setex(key, seconds, value);
     } catch (error) {
       logger.error(`Redis SETEX error for key ${key}:`, error);
       throw error;
@@ -187,7 +192,7 @@ class RedisClient {
    */
   async hset(key, field, value) {
     try {
-      return await this.client.hSet(key, field, value);
+      return await this.client.hset(key, field, value);
     } catch (error) {
       logger.error(`Redis HSET error:`, error);
       throw error;
@@ -196,7 +201,7 @@ class RedisClient {
 
   async hget(key, field) {
     try {
-      return await this.client.hGet(key, field);
+      return await this.client.hget(key, field);
     } catch (error) {
       logger.error(`Redis HGET error:`, error);
       throw error;
@@ -205,7 +210,7 @@ class RedisClient {
 
   async hgetall(key) {
     try {
-      return await this.client.hGetAll(key);
+      return await this.client.hgetall(key);
     } catch (error) {
       logger.error(`Redis HGETALL error:`, error);
       throw error;
@@ -217,7 +222,7 @@ class RedisClient {
    */
   async flushdb() {
     try {
-      return await this.client.flushDb();
+      return await this.client.flushdb();
     } catch (error) {
       logger.error('Redis FLUSHDB error:', error);
       throw error;
@@ -231,6 +236,7 @@ class RedisClient {
     if (this.client) {
       await this.client.quit();
       logger.info('Redis client disconnected');
+      this.isConnected = false;
     }
   }
 
@@ -252,4 +258,3 @@ class RedisClient {
 
 // Export singleton instance
 module.exports = new RedisClient();
-
