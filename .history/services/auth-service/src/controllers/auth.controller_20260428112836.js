@@ -11,7 +11,7 @@ class AuthController {
    * @access  Public
    */
     checkHealth = asyncHandler(async (req, res) => {
-      return ResponseHandler.success(res, 'auth-service is healthy', 200);
+      return ResponseHandler.success(res, ' is healthy');
     });
 
   /**

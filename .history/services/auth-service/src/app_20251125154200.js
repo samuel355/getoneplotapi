@@ -35,16 +35,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Health check
-app.get('/', (req, res) => {
-  res.json({
-    status: 'healthy',
-    service: 'auth-service',
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
-  });
-});
-
 app.get('/health/live', (req, res) => {
   res.status(200).json({ status: 'alive' });
 });

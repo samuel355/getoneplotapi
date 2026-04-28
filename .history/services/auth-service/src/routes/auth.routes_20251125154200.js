@@ -5,7 +5,6 @@ const { authenticate } = require('../middleware/auth.middleware');
 const router = express.Router();
 
 // Public routes
-router.get('/health', authController.checkHealth);
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/social/login', authController.socialLogin);

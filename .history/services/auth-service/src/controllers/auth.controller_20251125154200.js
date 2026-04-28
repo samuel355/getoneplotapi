@@ -4,16 +4,6 @@ const authService = require('../services/auth.service');
 const emailService = require('@getplot/notifications-service/src/services/email.service');
 
 class AuthController {
-
-  /**
-   * @route   POST /check health
-   * @desc    Check health of the service
-   * @access  Public
-   */
-    checkHealth = asyncHandler(async (req, res) => {
-      return ResponseHandler.success(res, 'auth-service is healthy', 200);
-    });
-
   /**
    * @route   POST /api/v1/auth/register
    * @desc    Register new user

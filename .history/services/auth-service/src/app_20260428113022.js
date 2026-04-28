@@ -36,7 +36,7 @@ app.get('/health', (req, res) => {
 });
 
 // Health check
-app.get('/', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'auth-service',

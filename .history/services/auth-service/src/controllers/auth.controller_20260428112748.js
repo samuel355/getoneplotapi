@@ -7,12 +7,9 @@ class AuthController {
 
   /**
    * @route   POST /check health
-   * @desc    Check health of the service
+   * @desc    Register new user
    * @access  Public
    */
-    checkHealth = asyncHandler(async (req, res) => {
-      return ResponseHandler.success(res, 'auth-service is healthy', 200);
-    });
 
   /**
    * @route   POST /api/v1/auth/register
