@@ -59,4 +59,7 @@ docker-compose.override.yml
 .terraform/
 *.tfstate
 *.tfstate.backup
+.history
+.husky
+.github
 
