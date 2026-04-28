@@ -460,18 +460,13 @@ See `CONTRIBUTING.md` for development guidelines.
 
 ## 📄 License
 
-Copyright © 2025 Get Plot. All rights reserved.
+Copyright © 2026 Get One Plot. All rights reserved.
 
 ## 🆘 Support
 
 - **Documentation**: `/docs`
-- **API Docs**: `http://localhost:3000/api-docs`
-- **Issues**: GitHub Issues
-- **Email**: api-support@getplot.com
-
----
 
 **Version**: 1.0.0  
-**Last Updated**: 2025-10-21  
+**Last Updated**: 2026-04-27
 **Maintained by**: Get Plot Engineering Team
 
